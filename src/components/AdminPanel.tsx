@@ -14,7 +14,9 @@ export default function AdminPanel({ onBack, userRole, onRoleUpdate }: AdminPane
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Admin content state
+  const TOWNS = ['Huntertown', 'Auburn', 'Garrett', 'Fort Wayne'];
+  const activeTown = gasAuth.getActiveTown();
+
   const [members, setMembers] = useState<any[]>([]);
   const [events, setEvents] = useState<any[]>([]);
   const [newPasscode, setNewPasscode] = useState('');
@@ -25,6 +27,7 @@ export default function AdminPanel({ onBack, userRole, onRoleUpdate }: AdminPane
   const [newEventLocation, setNewEventLocation] = useState('');
   const [newEventDescription, setNewEventDescription] = useState('');
   const [newEventCapacity, setNewEventCapacity] = useState('20');
+  const [newEventTown, setNewEventTown] = useState(activeTown || '');
 
   useEffect(() => {
     if (isUnlocked) {
@@ -91,6 +94,7 @@ export default function AdminPanel({ onBack, userRole, onRoleUpdate }: AdminPane
     setIsLoading(true);
     try {
       await fetchFromGas('addEvent', {
+        town: newEventTown,
         event: {
           title: newEventTitle,
           date: newEventDate,
@@ -181,7 +185,9 @@ export default function AdminPanel({ onBack, userRole, onRoleUpdate }: AdminPane
         </button>
         <div className="flex-1">
           <h1 className="text-xl md:text-2xl font-semibold text-white">Admin Dashboard</h1>
-          <p className="hidden md:block text-xs text-neutral-500 uppercase tracking-widest mt-0.5">Manage Events & Users</p>
+          <p className="hidden md:block text-xs text-neutral-500 uppercase tracking-widest mt-0.5">
+            {activeTown ? `Managing Town: ${activeTown}` : 'Manage Events & Users'}
+          </p>
         </div>
       </header>
 
@@ -255,9 +261,23 @@ export default function AdminPanel({ onBack, userRole, onRoleUpdate }: AdminPane
                 <label className="text-xs text-neutral-500">Event Title</label>
                 <input required value={newEventTitle} onChange={e => setNewEventTitle(e.target.value)} type="text" className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-2 text-white text-sm outline-none focus:border-cyan-600" />
               </div>
-              <div className="space-y-1.5">
+              <div className="col-span-2 space-y-1.5">
                 <label className="text-xs text-neutral-500">Date & Time</label>
                 <input required value={newEventDate} onChange={e => setNewEventDate(e.target.value)} type="datetime-local" className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-2 text-white text-sm outline-none focus:border-cyan-600" style={{colorScheme: 'dark'}} />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs text-neutral-500">Town</label>
+                <select
+                  value={newEventTown}
+                  onChange={(e) => setNewEventTown(e.target.value)}
+                  className="w-full bg-neutral-950 border border-neutral-800 focus:border-cyan-600 rounded-lg px-3 py-2 text-white text-sm outline-none transition-all appearance-none"
+                  required
+                >
+                  <option value="" disabled>Select Town</option>
+                  {TOWNS.map(town => (
+                    <option key={town} value={town}>{town}</option>
+                  ))}
+                </select>
               </div>
               <div className="space-y-1.5">
                 <label className="text-xs text-neutral-500">Capacity</label>
