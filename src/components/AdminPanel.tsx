@@ -9,7 +9,7 @@ interface AdminPanelProps {
 }
 
 export default function AdminPanel({ onBack, userRole, onRoleUpdate }: AdminPanelProps) {
-  const [isUnlocked, setIsUnlocked] = useState(userRole === 'admin');
+  const [isUnlocked, setIsUnlocked] = useState(false);
   const [passcode, setPasscode] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -171,13 +171,13 @@ export default function AdminPanel({ onBack, userRole, onRoleUpdate }: AdminPane
 
   return (
     <div className="flex-1 flex flex-col h-full bg-neutral-950 overflow-y-auto">
-      <header className="h-16 md:h-20 border-b border-neutral-800 flex items-center px-4 md:px-8 bg-neutral-950/80 backdrop-blur-md sticky top-0 z-10 shrink-0 gap-3 md:gap-4">
+      <header className="pt-safe pb-4 border-b border-neutral-800 flex items-center px-4 md:px-8 bg-neutral-950/80 backdrop-blur-md sticky top-0 z-10 shrink-0 gap-4 md:gap-6">
         <button
           onClick={onBack}
-          className="p-2 md:p-2.5 bg-neutral-900 hover:bg-neutral-800 text-neutral-400 hover:text-white rounded-full transition-all"
+          className="p-3 bg-neutral-900 hover:bg-neutral-800 text-neutral-400 hover:text-white rounded-full transition-all flex items-center justify-center shrink-0"
           title="Exit Admin"
         >
-          <ArrowLeft className="w-5 h-5" />
+          <ArrowLeft className="w-6 h-6" />
         </button>
         <div className="flex-1">
           <h1 className="text-xl md:text-2xl font-semibold text-white">Admin Dashboard</h1>

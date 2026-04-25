@@ -137,7 +137,7 @@ export default function App() {
         ) : (
           <div className="flex-1 flex overflow-hidden">
             <main className="flex-1 flex flex-col h-full bg-neutral-950 overflow-y-auto">
-              <header className="h-16 md:h-20 border-b border-neutral-800 flex items-center justify-between px-4 md:px-8 bg-neutral-950/80 backdrop-blur-md sticky top-0 z-10 shrink-0">
+              <header className="pt-safe pb-4 border-b border-neutral-800 flex items-center justify-between px-4 md:px-8 bg-neutral-950/80 backdrop-blur-md sticky top-0 z-10 shrink-0">
                 <div>
                   <h1 className="text-xl md:text-2xl font-semibold text-white">Upcoming Events</h1>
                   <p className="text-[10px] md:text-xs text-neutral-500 uppercase tracking-widest mt-0.5">Explore & Register</p>
@@ -305,12 +305,12 @@ export default function App() {
         {/* Mobile Event Details Overlay */}
         {selectedEvent && view === 'calendar' && (
           <div className="lg:hidden absolute inset-0 z-30 bg-neutral-950 flex flex-col slide-in-bottom animate-in fade-in duration-200">
-            <header className="h-16 border-b border-neutral-800 flex items-center px-4 sticky top-0 bg-neutral-950 shrink-0 gap-3">
+            <header className="pt-safe pb-4 border-b border-neutral-800 flex items-center px-4 sticky top-0 bg-neutral-950 shrink-0 gap-4">
               <button 
                 onClick={() => setSelectedEventUrlId(null)} 
-                className="p-2 -ml-2 text-neutral-400 hover:text-white transition-colors"
+                className="p-3 -ml-2 bg-neutral-900/80 hover:bg-neutral-800 text-neutral-400 hover:text-white transition-colors rounded-full"
               >
-                <ArrowLeft className="w-5 h-5" />
+                <ArrowLeft className="w-6 h-6" />
               </button>
               <h2 className="text-lg font-bold text-white truncate flex-1">{selectedEvent.title}</h2>
             </header>

@@ -67,13 +67,13 @@ export default function Chat({ onBack }: ChatProps) {
 
   return (
     <div className="flex flex-col h-full bg-neutral-950">
-      <header className="h-16 border-b border-neutral-800 flex items-center px-4 md:px-6 bg-neutral-950/80 backdrop-blur-md sticky top-0 z-10 shrink-0 gap-3">
+      <header className="pt-safe pb-4 border-b border-neutral-800 flex items-center px-4 md:px-6 bg-neutral-950/80 backdrop-blur-md sticky top-0 z-10 shrink-0 gap-4">
         {onBack && (
           <button 
             onClick={onBack} 
-            className="p-2 -ml-2 text-neutral-400 hover:text-white transition-colors bg-neutral-900/50 hover:bg-neutral-800 rounded-full md:hidden"
+            className="p-3 -ml-2 text-neutral-400 hover:text-white transition-colors bg-neutral-900/80 hover:bg-neutral-800 rounded-full md:hidden flex items-center justify-center shrink-0"
           >
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className="w-6 h-6" />
           </button>
         )}
         <h2 className="text-lg font-semibold text-white flex-1">GGI Youth Sports Chat</h2>
