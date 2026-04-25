@@ -1,4 +1,4 @@
-export const GAS_URL = 'https://script.google.com/macros/s/AKfycbz_C19ChYBfrUlUZEUHV67qZUz-MsTa3CqmgOIwlMZvH8xcW1BzwjJoQMj0tEzDLP9KYA/exec';
+export const GAS_URL = (import.meta.env.NEXT_PUBLIC_GAS_WEB_APP_URL || import.meta.env.VITE_GAS_WEB_APP_URL) as string;
 
 export async function callGas(payload: any) {
   if (!GAS_URL || !GAS_URL.startsWith('https://script.google.com')) {

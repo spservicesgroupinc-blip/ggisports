@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { gasAuth } from '../services/gasService';
+import { Bike } from 'lucide-react';
 
 interface LoginProps {
   onLogin: (role?: string) => void;
@@ -37,12 +38,13 @@ export default function Login({ onLogin }: LoginProps) {
   return (
     <div className="min-h-screen bg-neutral-950 flex items-center justify-center p-4 selection:bg-cyan-900 selection:text-white">
       <div className="w-full max-w-md">
-        <div className="flex flex-col items-center mb-8">
+        <div className="flex flex-col items-center mb-8 text-center">
           <div className="w-12 h-12 bg-cyan-600 rounded-xl flex items-center justify-center mb-4 shadow-lg shadow-cyan-900/20">
-            <div className="w-6 h-6 border-[2.5px] border-white rounded-md"></div>
+            <Bike className="w-6 h-6 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-white tracking-tight">GGI Youth Sports</h1>
           <p className="text-neutral-500 mt-2 text-sm uppercase tracking-widest font-semibold">Sports Event Management</p>
+          <p className="text-cyan-600 mt-1 text-xs uppercase tracking-widest font-semibold">Building Leadership Today</p>
         </div>
 
         <div className="bg-neutral-900/80 border border-neutral-800 rounded-2xl p-8 backdrop-blur-xl shadow-2xl">

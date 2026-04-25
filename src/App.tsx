@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Calendar, LayoutTemplate, Users, MapPin, Clock, LogOut, Settings, MessageSquare } from 'lucide-react';
+import { Calendar, LayoutTemplate, Users, MapPin, Clock, LogOut, Settings, MessageSquare, Bike } from 'lucide-react';
 import Login from './components/Login';
 import AdminPanel from './components/AdminPanel';
 import Chat from './components/Chat';
@@ -82,7 +82,7 @@ export default function App() {
       <aside className="hidden md:flex w-64 bg-neutral-900/50 border-r border-neutral-800 flex-col shrink-0">
         <div className="p-6 flex items-center gap-3">
           <div className="w-8 h-8 bg-cyan-600 rounded-lg flex items-center justify-center">
-            <div className="w-4 h-4 border-2 border-white rounded-sm"></div>
+            <Bike className="w-5 h-5 text-white" />
           </div>
           <span className="font-bold text-white tracking-tight text-lg">GGI Youth Sports</span>
         </div>
