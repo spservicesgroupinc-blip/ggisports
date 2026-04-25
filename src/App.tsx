@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Calendar, LayoutTemplate, Users, MapPin, Clock, LogOut, Settings, MessageSquare, Bike } from 'lucide-react';
+import { Calendar, LayoutTemplate, Users, MapPin, Clock, LogOut, Settings, MessageSquare, Bike, ArrowLeft, X } from 'lucide-react';
 import Login from './components/Login';
 import AdminPanel from './components/AdminPanel';
 import Chat from './components/Chat';
@@ -132,7 +132,7 @@ export default function App() {
           />
         ) : view === 'chat' ? (
           <main className="flex-1 flex flex-col h-full overflow-hidden">
-            <Chat />
+            <Chat onBack={() => setView('calendar')} />
           </main>
         ) : (
           <div className="flex-1 flex overflow-hidden">
@@ -305,11 +305,14 @@ export default function App() {
         {/* Mobile Event Details Overlay */}
         {selectedEvent && view === 'calendar' && (
           <div className="lg:hidden absolute inset-0 z-30 bg-neutral-950 flex flex-col slide-in-bottom animate-in fade-in duration-200">
-            <header className="h-16 border-b border-neutral-800 flex items-center justify-between px-4 sticky top-0 bg-neutral-950">
-              <h2 className="text-lg font-bold text-white truncate pr-4">{selectedEvent.title}</h2>
-              <button onClick={() => setSelectedEventUrlId(null)} className="p-2 -mr-2 bg-neutral-900 rounded-full text-neutral-400 hover:text-white">
-                <LayoutTemplate className="w-4 h-4 rotate-45" /> {/* Using LayoutTemplate as poor man's X icon since X isn't imported */}
+            <header className="h-16 border-b border-neutral-800 flex items-center px-4 sticky top-0 bg-neutral-950 shrink-0 gap-3">
+              <button 
+                onClick={() => setSelectedEventUrlId(null)} 
+                className="p-2 -ml-2 text-neutral-400 hover:text-white transition-colors"
+              >
+                <ArrowLeft className="w-5 h-5" />
               </button>
+              <h2 className="text-lg font-bold text-white truncate flex-1">{selectedEvent.title}</h2>
             </header>
             
             <div className="flex-1 overflow-y-auto p-4 space-y-6">

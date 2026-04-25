@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, Loader2 } from 'lucide-react';
+import { Send, Loader2, ArrowLeft } from 'lucide-react';
 import { fetchFromGas, gasAuth } from '../services/gasService';
 
 interface Message {
@@ -10,7 +10,11 @@ interface Message {
   timestamp: string;
 }
 
-export default function Chat() {
+interface ChatProps {
+  onBack?: () => void;
+}
+
+export default function Chat({ onBack }: ChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(true);
@@ -36,14 +40,9 @@ export default function Chat() {
     return () => clearInterval(interval);
   }, []);
 
-  const [messagesLength, setMessagesLength] = useState(0);
-
   useEffect(() => {
-    if (messages.length > messagesLength) {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-      setMessagesLength(messages.length);
-    }
-  }, [messages.length, messagesLength]);
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,8 +67,16 @@ export default function Chat() {
 
   return (
     <div className="flex flex-col h-full bg-neutral-950">
-      <header className="h-16 border-b border-neutral-800 flex items-center px-6 bg-neutral-950/80 backdrop-blur-md sticky top-0 z-10 shrink-0">
-        <h2 className="text-lg font-semibold text-white">GGI Youth Sports Chat</h2>
+      <header className="h-16 border-b border-neutral-800 flex items-center px-4 md:px-6 bg-neutral-950/80 backdrop-blur-md sticky top-0 z-10 shrink-0 gap-3">
+        {onBack && (
+          <button 
+            onClick={onBack} 
+            className="p-2 -ml-2 text-neutral-400 hover:text-white transition-colors bg-neutral-900/50 hover:bg-neutral-800 rounded-full md:hidden"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+        )}
+        <h2 className="text-lg font-semibold text-white flex-1">GGI Youth Sports Chat</h2>
       </header>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4">

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { fetchFromGas, gasAuth } from '../services/gasService';
-import { Settings, Users, Key, Trash2, Calendar as CalendarIcon, Plus } from 'lucide-react';
+import { Settings, Users, Key, Trash2, Calendar as CalendarIcon, Plus, ArrowLeft } from 'lucide-react';
 
 interface AdminPanelProps {
   onBack: () => void;
@@ -171,17 +171,18 @@ export default function AdminPanel({ onBack, userRole, onRoleUpdate }: AdminPane
 
   return (
     <div className="flex-1 flex flex-col h-full bg-neutral-950 overflow-y-auto">
-      <header className="h-20 border-b border-neutral-800 flex items-center justify-between px-8 bg-neutral-950/80 backdrop-blur-md sticky top-0 z-10 shrink-0">
-        <div>
-          <h1 className="text-2xl font-semibold text-white">Admin Dashboard</h1>
-          <p className="text-xs text-neutral-500 uppercase tracking-widest mt-0.5">Manage Events & Users</p>
-        </div>
+      <header className="h-16 md:h-20 border-b border-neutral-800 flex items-center px-4 md:px-8 bg-neutral-950/80 backdrop-blur-md sticky top-0 z-10 shrink-0 gap-3 md:gap-4">
         <button
           onClick={onBack}
-          className="bg-neutral-800 hover:bg-neutral-700 text-white px-5 py-2 rounded-full text-sm font-medium transition-all"
+          className="p-2 md:p-2.5 bg-neutral-900 hover:bg-neutral-800 text-neutral-400 hover:text-white rounded-full transition-all"
+          title="Exit Admin"
         >
-          Exit Admin
+          <ArrowLeft className="w-5 h-5" />
         </button>
+        <div className="flex-1">
+          <h1 className="text-xl md:text-2xl font-semibold text-white">Admin Dashboard</h1>
+          <p className="hidden md:block text-xs text-neutral-500 uppercase tracking-widest mt-0.5">Manage Events & Users</p>
+        </div>
       </header>
 
       <div className="p-6 md:p-8 max-w-5xl mx-auto w-full grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 md:pb-8">
