@@ -10,18 +10,25 @@ export default function Login({ onLogin }: LoginProps) {
   const [isRegistering, setIsRegistering] = useState(false);
   const [fullName, setFullName] = useState('');
   const [password, setPassword] = useState('');
+  const [selectedTown, setSelectedTown] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  const TOWNS = ['Huntertown', 'Auburn', 'Garrett', 'Fort Wayne'];
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isRegistering && !selectedTown) {
+      setError('Please select a town to register.');
+      return;
+    }
     setError(null);
     setIsLoading(true);
 
     try {
       let role = 'user';
       if (isRegistering) {
-        const res = await gasAuth.register(fullName, password);
+        const res = await gasAuth.register(fullName, password, selectedTown);
         role = res.role;
       } else {
         const res = await gasAuth.login(fullName, password);
@@ -108,6 +115,25 @@ export default function Login({ onLogin }: LoginProps) {
                 placeholder="••••••••"
               />
             </div>
+
+            {isRegistering && (
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-neutral-400 uppercase tracking-wider block">
+                  Select Town
+                </label>
+                <select
+                  value={selectedTown}
+                  onChange={(e) => setSelectedTown(e.target.value)}
+                  className="w-full bg-neutral-950 border border-neutral-800 focus:border-cyan-600 focus:ring-1 focus:ring-cyan-600 rounded-lg px-4 py-2.5 text-white text-sm outline-none transition-all appearance-none"
+                  required
+                >
+                  <option value="" disabled>Select your town</option>
+                  {TOWNS.map(town => (
+                    <option key={town} value={town}>{town}</option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             <button
               type="submit"

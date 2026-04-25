@@ -113,7 +113,7 @@ function doPost(e) {
       data = handleLogin(payload.email, payload.password);
       return sendResponse({ success: true, data });
     } else if (action === "register") {
-      data = handleRegister(payload.email, payload.password);
+      data = handleRegister(payload.email, payload.password, payload.town);
       return sendResponse({ success: true, data });
     }
 
@@ -123,12 +123,17 @@ function doPost(e) {
     const userId = validateToken(token);
     if (!userId) return sendResponse({ success: false, error: "unauthorized" });
 
+    const town = payload.town; // Optional but needed for town-specific endpoints
+
     switch (action) {
+      case "addTownToUser":
+        data = addTownToUser(payload.townToAdd, userId);
+        break;
       case "getEvents":
-        data = getEvents();
+        data = getEvents(town);
         break;
       case "addEvent":
-        data = addEvent(payload.event, userId);
+        data = addEvent(payload.event, userId, town);
         break;
       case "deleteEvent":
         data = deleteEvent(payload.id, userId);
@@ -137,7 +142,7 @@ function doPost(e) {
         data = registerForEvent(payload.eventId, userId);
         break;
       case "getMembers":
-        data = getMembers();
+        data = getMembers(town);
         break;
       case "verifyAdminPasscode":
         data = verifyAdminPasscode(payload.passcode, userId);
@@ -149,10 +154,10 @@ function doPost(e) {
         data = updateUserRole(payload.targetUserId, payload.newRole, userId);
         break;
       case "getMessages":
-        data = getMessages();
+        data = getMessages(town);
         break;
       case "sendMessage":
-        data = sendMessage(payload.text, userId, String(payload.fullName));
+        data = sendMessage(payload.text, userId, String(payload.fullName), town);
         break;
       default:
         throw new Error("Unknown action: " + action);
@@ -171,7 +176,7 @@ function sendResponse(responseObject) {
 }
 
 /* Auth Logic */
-function handleRegister(fullName, password) {
+function handleRegister(fullName, password, town) {
   const ss = getDb();
   const sheet = ss.getSheetByName(SHEETS.USERS);
   const data = sheet.getDataRange().getValues();
@@ -184,9 +189,10 @@ function handleRegister(fullName, password) {
 
   const userId = generateId();
   const role = data.length === 1 ? "admin" : "user";
+  const townsStr = JSON.stringify(town ? [town] : []);
 
-  sheet.appendRow([userId, fullName, password, role, new Date().toISOString()]);
-  return generateSession(userId, fullName, role);
+  sheet.appendRow([userId, fullName, password, role, new Date().toISOString(), townsStr]);
+  return generateSession(userId, fullName, role, townsStr);
 }
 
 function handleLogin(fullName, password) {
@@ -200,13 +206,17 @@ function handleLogin(fullName, password) {
       data[i][1].toLowerCase() === fullName.toLowerCase() &&
       String(data[i][2]) === String(password)
     ) {
-      return generateSession(data[i][0], fullName, data[i][3]);
+      const townsStr = data[i][5] || '[]';
+      let parsed = [];
+      try { parsed = JSON.parse(townsStr); } catch (e) {}
+      if (!Array.isArray(parsed)) parsed = [];
+      return generateSession(data[i][0], fullName, data[i][3], JSON.stringify(parsed));
     }
   }
   throw new Error("Invalid username or password");
 }
 
-function generateSession(userId, fullName, role) {
+function generateSession(userId, fullName, role, townsStr) {
   const token = generateId() + generateId();
   const ss = getDb();
   const sheet = ss.getSheetByName(SHEETS.SESSIONS);
@@ -214,7 +224,30 @@ function generateSession(userId, fullName, role) {
   expiresAt.setDate(expiresAt.getDate() + 7);
 
   sheet.appendRow([token, userId, expiresAt.toISOString()]);
-  return { token, userId, fullName, role };
+  let towns = [];
+  try {
+    towns = JSON.parse(townsStr || '[]');
+  } catch (e) {}
+  return { token, userId, fullName, role, towns };
+}
+
+function addTownToUser(town, userId) {
+  const ss = getDb();
+  const sheet = ss.getSheetByName(SHEETS.USERS);
+  const data = sheet.getDataRange().getValues();
+
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][0] === userId) {
+      let towns = [];
+      try { towns = JSON.parse(data[i][5] || '[]'); } catch (e) {}
+      if (!towns.includes(town)) {
+        towns.push(town);
+        sheet.getRange(i + 1, 6).setValue(JSON.stringify(towns));
+      }
+      return { success: true, towns };
+    }
+  }
+  throw new Error("User not found");
 }
 
 function validateToken(token) {
@@ -296,7 +329,7 @@ function updateUserRole(targetUserId, newRole, userId) {
 }
 
 /* Data Logic */
-function getEvents() {
+function getEvents(town) {
   const ss = getDb();
   const eventsData = ss
     .getSheetByName(SHEETS.EVENTS)
@@ -314,6 +347,9 @@ function getEvents() {
 
   const events = [];
   for (let i = 1; i < eventsData.length; i++) {
+    if (eventsData[i][8] && String(eventsData[i][8]).toLowerCase() !== String(town).toLowerCase()) {
+      continue;
+    }
     events.push({
       id: eventsData[i][0],
       title: eventsData[i][1],
@@ -323,13 +359,14 @@ function getEvents() {
       capacity: parseInt(eventsData[i][5], 10) || 0,
       createdBy: eventsData[i][6],
       createdAt: eventsData[i][7],
+      town: eventsData[i][8] || '',
       currentRegistrations: regCounts[eventsData[i][0]] || 0,
     });
   }
   return events;
 }
 
-function addEvent(evtData, userId) {
+function addEvent(evtData, userId, town) {
   const ss = getDb();
   if (getUserRole(userId) !== "admin")
     throw new Error("Only admins can create events");
@@ -344,6 +381,7 @@ function addEvent(evtData, userId) {
     evtData.capacity,
     userId,
     new Date().toISOString(),
+    town
   ]);
   return { id: newId };
 }
@@ -379,12 +417,16 @@ function registerForEvent(eventId, userId) {
   return { id: newId };
 }
 
-function getMembers() {
+function getMembers(town) {
   const ss = getDb();
   const data = ss.getSheetByName(SHEETS.USERS).getDataRange().getValues();
   const members = [];
   for (let i = 1; i < data.length; i++) {
-    members.push({ id: data[i][0], fullName: data[i][1], role: data[i][3] });
+    let townsObj = [];
+    try { townsObj = JSON.parse(data[i][5] || '[]'); } catch (e) {}
+    if (town && !townsObj.includes(town) && townsObj.length > 0) continue; // For backward compatibility, if towns array is empty, include them for now? Better to filter strictly:
+    if (town && !townsObj.includes(town) && data[i][5]) continue; // If empty, let them be in all or none? Let's just exclude if not in towns. Actually, existing users might not have town, so maybe include them everywhere if they have no towns.
+    members.push({ id: data[i][0], fullName: data[i][1], role: data[i][3], towns: townsObj });
   }
   return members;
 }
@@ -398,7 +440,7 @@ function getUserRole(userId) {
 }
 
 /* Chat Logic */
-function getMessages() {
+function getMessages(town) {
   const ss = getDb();
   const sheet = ss.getSheetByName(SHEETS.MESSAGES);
   if (!sheet) return [];
@@ -409,11 +451,14 @@ function getMessages() {
   // Return last 100 messages for performance
   const startRow = Math.max(2, lastRow - 99);
   const numRows = lastRow - startRow + 1;
-  const data = sheet.getRange(startRow, 1, numRows, 5).getValues();
+  const data = sheet.getRange(startRow, 1, numRows, 6).getValues();
 
   const messages = [];
 
   for (let i = 0; i < data.length; i++) {
+    if (data[i][5] && String(data[i][5]).toLowerCase() !== String(town).toLowerCase()) {
+      continue;
+    }
     messages.push({
       id: data[i][0],
       userId: data[i][1],
@@ -423,12 +468,13 @@ function getMessages() {
         data[i][4] instanceof Date
           ? data[i][4].toISOString()
           : String(data[i][4]),
+      town: data[i][5] || ''
     });
   }
   return messages;
 }
 
-function sendMessage(text, userId, fullName) {
+function sendMessage(text, userId, fullName, town) {
   const lock = LockService.getScriptLock();
   lock.waitLock(5000);
 
@@ -437,12 +483,12 @@ function sendMessage(text, userId, fullName) {
     let sheet = ss.getSheetByName(SHEETS.MESSAGES);
     if (!sheet) {
       sheet = ss.insertSheet(SHEETS.MESSAGES);
-      sheet.appendRow(["id", "userId", "fullName", "text", "timestamp"]);
+      sheet.appendRow(["id", "userId", "fullName", "text", "timestamp", "town"]);
       sheet.setFrozenRows(1);
     }
 
     const newId = generateId();
-    sheet.appendRow([newId, userId, fullName, text, new Date().toISOString()]);
+    sheet.appendRow([newId, userId, fullName, text, new Date().toISOString(), town]);
     SpreadsheetApp.flush();
     return { id: newId };
   } finally {

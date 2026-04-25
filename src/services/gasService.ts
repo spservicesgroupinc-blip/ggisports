@@ -54,6 +54,8 @@ export async function callGas(payload: any) {
 let sessionToken: string | null = null;
 let currentUserId: string | null = null;
 let currentFullName: string | null = null;
+let currentTowns: string[] = [];
+let activeTown: string | null = null;
 
 export const gasAuth = {
   login: async (username: string, password: string) => {
@@ -62,23 +64,32 @@ export const gasAuth = {
     sessionToken = data.token;
     currentUserId = data.userId;
     currentFullName = data.fullName;
+    currentTowns = data.towns || [];
+    activeTown = currentTowns.length > 0 ? currentTowns[0] : null;
     return data;
   },
-  register: async (username: string, password: string) => {
-    const data = await callGas({ action: 'register', email: username, password });
+  register: async (username: string, password: string, town: string) => {
+    const data = await callGas({ action: 'register', email: username, password, town });
     sessionToken = data.token;
     currentUserId = data.userId;
     currentFullName = data.fullName;
+    currentTowns = data.towns || [];
+    activeTown = currentTowns.length > 0 ? currentTowns[0] : null;
     return data;
   },
   logout: () => {
     sessionToken = null;
     currentUserId = null;
     currentFullName = null;
+    currentTowns = [];
+    activeTown = null;
   },
   getToken: () => sessionToken,
   getUserId: () => currentUserId,
   getFullName: () => currentFullName || 'Member',
+  getTowns: () => currentTowns,
+  getActiveTown: () => activeTown,
+  setActiveTown: (town: string) => { activeTown = town; },
   isAuthenticated: () => sessionToken !== null,
 };
 
@@ -91,6 +102,7 @@ export async function fetchFromGas(action: string, payload: any = {}) {
   return await callGas({
     action,
     token,
+    town: activeTown,
     ...payload,
   });
 }

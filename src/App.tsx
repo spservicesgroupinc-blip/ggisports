@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Calendar, LayoutTemplate, Users, MapPin, Clock, LogOut, Settings, MessageSquare, Bike, ArrowLeft, X } from 'lucide-react';
+import { Calendar, LayoutTemplate, Users, MapPin, Clock, LogOut, Settings, MessageSquare, Bike, ArrowLeft, X, ChevronDown } from 'lucide-react';
 import Login from './components/Login';
 import AdminPanel from './components/AdminPanel';
 import Chat from './components/Chat';
@@ -12,10 +12,15 @@ import { fetchFromGas, gasAuth } from './services/gasService';
 
 type ViewMode = 'calendar' | 'admin' | 'chat';
 
+const TOWNS = ['Huntertown', 'Auburn', 'Garrett', 'Fort Wayne'];
+
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(gasAuth.isAuthenticated());
   const [view, setView] = useState<ViewMode>('calendar');
   const [userRole, setUserRole] = useState<string>('user');
+  const [activeTown, setActiveTown] = useState<string | null>(gasAuth.getActiveTown());
+  const [userTowns, setUserTowns] = useState<string[]>(gasAuth.getTowns());
+  const [isSwitchingTown, setIsSwitchingTown] = useState(false);
   
   const [events, setEvents] = useState<any[]>([]);
   const [isLoadingEvents, setIsLoadingEvents] = useState(false);
@@ -29,10 +34,10 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (isAuthenticated && view === 'calendar') {
+    if (isAuthenticated && view === 'calendar' && activeTown) {
       loadEvents();
     }
-  }, [isAuthenticated, view]);
+  }, [isAuthenticated, view, activeTown]);
 
   const loadEvents = async () => {
     setIsLoadingEvents(true);
@@ -62,6 +67,27 @@ export default function App() {
   const handleLoginSuccess = (role?: string) => {
     setIsAuthenticated(true);
     if(role) setUserRole(role);
+    setActiveTown(gasAuth.getActiveTown());
+    setUserTowns(gasAuth.getTowns());
+  };
+
+  const handleTownChange = async (town: string) => {
+    if (!town) return;
+    setIsSwitchingTown(true);
+    try {
+      if (!userTowns.includes(town)) {
+        const res = await fetchFromGas('addTownToUser', { townToAdd: town });
+        setUserTowns(res.towns || [...userTowns, town]);
+        // Update gasAuth internal state if possible, though it reads from login. 
+        // We'll just rely on current run state unless they refresh.
+      }
+      gasAuth.setActiveTown(town);
+      setActiveTown(town);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to join town');
+    } finally {
+      setIsSwitchingTown(false);
+    }
   };
 
   if (!isAuthenticated) {
@@ -87,36 +113,54 @@ export default function App() {
           <span className="font-bold text-white tracking-tight text-lg">GGI Youth Sports</span>
         </div>
         
-        <nav className="flex-1 px-4 py-2 space-y-1">
-          <div className="px-3 py-2 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Navigation</div>
-          <button onClick={() => setView('calendar')} className={`flex w-full items-center gap-3 px-3 py-2 rounded-md transition-colors ${view === 'calendar' ? 'bg-cyan-900/20 text-cyan-400' : 'text-neutral-400 hover:bg-neutral-800'}`}>
+        <div className="px-4 pb-4 border-b border-neutral-800">
+          <label className="text-xs font-semibold text-neutral-500 uppercase tracking-wider block mb-2">Active Town</label>
+          <div className="relative">
+            <select 
+              value={activeTown || ''}
+              onChange={(e) => handleTownChange(e.target.value)}
+              disabled={isSwitchingTown}
+              className="w-full bg-neutral-950 border border-neutral-800 rounded-lg pl-3 pr-8 py-2 text-sm text-white focus:border-cyan-500 outline-none appearance-none disabled:opacity-50"
+            >
+              <option value="" disabled>Select Town</option>
+              {TOWNS.map(t => (
+                <option key={t} value={t}>{t} {!userTowns.includes(t) ? '(Join)' : ''}</option>
+              ))}
+            </select>
+            <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500 pointer-events-none" />
+          </div>
+        </div>
+
+        <nav className="flex-1 px-4 py-4 space-y-1.5 overflow-y-auto">
+          <div className="px-3 pb-2 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Navigation</div>
+          <button onClick={() => setView('calendar')} className={`flex w-full items-center gap-3 px-3 py-2.5 rounded-lg transition-all ${view === 'calendar' ? 'bg-cyan-900/20 text-cyan-400 font-medium' : 'text-neutral-400 hover:bg-neutral-800 hover:text-white'}`}>
             <Calendar className="w-5 h-5" /> Event Board
           </button>
-          <button onClick={() => setView('chat')} className={`flex w-full items-center gap-3 px-3 py-2 rounded-md transition-colors ${view === 'chat' ? 'bg-cyan-900/20 text-cyan-400' : 'text-neutral-400 hover:bg-neutral-800'}`}>
+          <button onClick={() => setView('chat')} className={`flex w-full items-center gap-3 px-3 py-2.5 rounded-lg transition-all ${view === 'chat' ? 'bg-cyan-900/20 text-cyan-400 font-medium' : 'text-neutral-400 hover:bg-neutral-800 hover:text-white'}`}>
             <MessageSquare className="w-5 h-5" /> Messaging
           </button>
         </nav>
 
         <div className="p-4 border-t border-neutral-800 space-y-4">
-          <div className="flex items-center justify-between gap-2 p-2 bg-neutral-800/50 rounded-lg">
-            <div className="flex items-center gap-2 min-w-0">
-              <div className="w-8 h-8 rounded-full bg-cyan-700 flex items-center justify-center text-white text-xs font-bold shrink-0 uppercase">
+          <div className="flex items-center justify-between gap-2 p-2.5 bg-neutral-800/50 rounded-xl">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-9 h-9 rounded-full bg-cyan-700 flex items-center justify-center text-white text-xs font-bold shrink-0 uppercase">
                 ME
               </div>
               <div className="flex-1 min-w-0">
-                <div className="text-sm text-white font-medium truncate">Logged In</div>
-                <div className="text-[10px] text-neutral-500 uppercase">{userRole}</div>
+                <div className="text-sm text-white font-medium truncate">{gasAuth.getFullName()}</div>
+                <div className="text-[10px] text-neutral-500 uppercase font-semibold">{userRole}</div>
               </div>
             </div>
             <button 
               onClick={handleLogout}
-              className="text-neutral-500 hover:text-white transition-colors p-1"
+              className="text-neutral-500 hover:text-white transition-colors p-2 bg-neutral-900 rounded-lg"
               title="Logout"
             >
               <LogOut className="w-4 h-4" />
             </button>
           </div>
-          <div className="text-center text-[10px] text-neutral-600 px-2 mt-4 font-medium">
+          <div className="text-center text-[10px] text-neutral-600 px-2 mt-4 font-medium leading-tight">
             Grant, Grace, and Isaiah Russell are the owners of this club
           </div>
         </div>
@@ -132,19 +176,33 @@ export default function App() {
           />
         ) : view === 'chat' ? (
           <main className="flex-1 flex flex-col h-full overflow-hidden">
-            <Chat onBack={() => setView('calendar')} />
+            <Chat onBack={() => setView('calendar')} key={activeTown} />
           </main>
         ) : (
           <div className="flex-1 flex overflow-hidden">
             <main className="flex-1 flex flex-col h-full bg-neutral-950 overflow-y-auto">
               <header className="pt-safe pb-4 border-b border-neutral-800 flex items-center justify-between px-4 md:px-8 bg-neutral-950/80 backdrop-blur-md sticky top-0 z-10 shrink-0">
-                <div>
-                  <h1 className="text-xl md:text-2xl font-semibold text-white">Upcoming Events</h1>
-                  <p className="text-[10px] md:text-xs text-neutral-500 uppercase tracking-widest mt-0.5">Explore & Register</p>
+                <div className="flex-1 min-w-0 mr-4">
+                  <h1 className="text-xl md:text-2xl font-semibold text-white truncate">Upcoming Events</h1>
+                  <div className="flex items-center gap-2 mt-1 md:hidden">
+                    <select 
+                      value={activeTown || ''}
+                      onChange={(e) => handleTownChange(e.target.value)}
+                      disabled={isSwitchingTown}
+                      className="bg-transparent text-xs text-neutral-400 font-medium outline-none appearance-none pr-4 max-w-full"
+                    >
+                      <option value="" disabled>Select Town</option>
+                      {TOWNS.map(t => (
+                        <option key={t} value={t}>{t} {!userTowns.includes(t) ? '(Join)' : ''}</option>
+                      ))}
+                    </select>
+                    <ChevronDown className="w-3 h-3 text-neutral-500 -ml-5 pointer-events-none" />
+                  </div>
+                  <p className="hidden md:block text-[10px] md:text-xs text-neutral-500 uppercase tracking-widest mt-0.5">Explore & Register</p>
                 </div>
                 <button 
                   onClick={() => setView('admin')}
-                  className="bg-cyan-600 hover:bg-cyan-500 text-white px-3 py-1.5 md:px-5 md:py-2 rounded-full text-xs md:text-sm font-medium transition-all shadow-lg shadow-cyan-900/20 flex items-center gap-2"
+                  className="bg-cyan-600 hover:bg-cyan-500 text-white px-3 py-1.5 md:px-5 md:py-2 rounded-full text-xs md:text-sm font-medium transition-all shadow-lg shadow-cyan-900/20 flex items-center gap-2 shrink-0"
                 >
                   <Settings className="w-3 h-3 md:w-4 md:h-4" /> <span className="hidden md:inline">Admin Panel</span>
                 </button>
