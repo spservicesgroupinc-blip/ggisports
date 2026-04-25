@@ -23,9 +23,10 @@ export default function Chat() {
     try {
       const data = await fetchFromGas('getMessages');
       setMessages(data || []);
-      setIsLoading(false);
     } catch (err) {
       console.error('Failed to load messages:', err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -35,9 +36,14 @@ export default function Chat() {
     return () => clearInterval(interval);
   }, []);
 
+  const [messagesLength, setMessagesLength] = useState(0);
+
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+    if (messages.length > messagesLength) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      setMessagesLength(messages.length);
+    }
+  }, [messages.length, messagesLength]);
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -99,7 +105,7 @@ export default function Chat() {
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="p-4 bg-neutral-900 border-t border-neutral-800 pb-[72px] md:pb-4">
+      <div className="p-4 bg-neutral-900 border-t border-neutral-800">
         <form onSubmit={handleSend} className="flex gap-2">
           <input
             type="text"

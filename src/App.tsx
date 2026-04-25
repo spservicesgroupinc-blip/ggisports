@@ -116,6 +116,9 @@ export default function App() {
               <LogOut className="w-4 h-4" />
             </button>
           </div>
+          <div className="text-center text-[10px] text-neutral-600 px-2 mt-4 font-medium">
+            Grant, Grace, and Isaiah Russell are the owners of this club
+          </div>
         </div>
       </aside>
 
@@ -147,7 +150,7 @@ export default function App() {
                 </button>
               </header>
 
-              <div className="p-4 md:p-8 max-w-5xl mx-auto w-full flex-1 pb-24 md:pb-8">
+              <div className="p-4 md:p-8 max-w-5xl mx-auto w-full flex-1 md:pb-8">
                 {isLoadingEvents ? (
                   <div className="flex items-center justify-center h-40">
                     <div className="animate-pulse text-neutral-500 flex items-center gap-2">
@@ -275,7 +278,7 @@ export default function App() {
         )}
 
         {/* Mobile Bottom Navigation */}
-        <nav className="md:hidden flex items-center justify-around bg-neutral-950 border-t border-neutral-800 pb-safe absolute bottom-0 w-full z-20">
+        <nav className="md:hidden flex items-center justify-around bg-neutral-950 border-t border-neutral-800 pb-safe w-full z-20 shrink-0">
           <button 
             onClick={() => setView('calendar')} 
             className={`flex flex-col items-center gap-1 p-3 w-full ${view === 'calendar' ? 'text-cyan-400' : 'text-neutral-500'}`}
@@ -309,7 +312,7 @@ export default function App() {
               </button>
             </header>
             
-            <div className="flex-1 overflow-y-auto p-4 space-y-6 pb-24">
+            <div className="flex-1 overflow-y-auto p-4 space-y-6">
               <div className="flex items-center gap-2 text-xs font-semibold px-2.5 py-1 bg-cyan-900/30 text-cyan-400 w-fit rounded-full">
                 {selectedEvent.currentRegistrations} / {selectedEvent.capacity} spots filled
               </div>
@@ -342,7 +345,7 @@ export default function App() {
               </div>
             </div>
 
-            <div className="p-4 bg-neutral-950 border-t border-neutral-800 absolute bottom-0 w-full z-40 mb-14">
+            <div className="p-4 bg-neutral-950 border-t border-neutral-800 shrink-0 pb-safe">
               {selectedEvent.currentRegistrations >= selectedEvent.capacity ? (
                 <button disabled className="w-full py-3.5 bg-neutral-800 text-neutral-500 rounded-xl text-sm font-semibold cursor-not-allowed">
                   Event is Full

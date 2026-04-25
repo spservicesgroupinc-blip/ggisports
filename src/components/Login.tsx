@@ -48,9 +48,26 @@ export default function Login({ onLogin }: LoginProps) {
         </div>
 
         <div className="bg-neutral-900/80 border border-neutral-800 rounded-2xl p-8 backdrop-blur-xl shadow-2xl">
-          <h2 className="text-xl text-white font-medium mb-6">
-            {isRegistering ? 'Create your account' : 'Sign in to your account'}
-          </h2>
+          <div className="flex p-1 bg-neutral-950 rounded-xl mb-6 border border-neutral-800/50 relative">
+            <button
+              type="button"
+              onClick={() => { setIsRegistering(false); setError(null); }}
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 z-10 ${
+                !isRegistering ? 'bg-neutral-800 text-white shadow-sm ring-1 ring-neutral-700/50' : 'text-neutral-500 hover:text-neutral-300 hover:bg-neutral-900/50'
+              }`}
+            >
+              Sign In
+            </button>
+            <button
+              type="button"
+              onClick={() => { setIsRegistering(true); setError(null); }}
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 z-10 ${
+                isRegistering ? 'bg-cyan-950 border border-cyan-900 text-cyan-400 shadow-sm shadow-cyan-900/20 ring-1 ring-cyan-800/50' : 'text-neutral-500 hover:text-neutral-300 hover:bg-neutral-900/50'
+              }`}
+            >
+              Create Account
+            </button>
+          </div>
 
           {error && (
             <div className="bg-red-950/50 border border-red-900/50 text-red-400 p-3 rounded-lg text-sm mb-6 flex items-start gap-2">
@@ -111,20 +128,11 @@ export default function Login({ onLogin }: LoginProps) {
             </button>
           </form>
 
-          <div className="mt-6 text-center">
-            <button
-              type="button"
-              onClick={() => {
-                setIsRegistering(!isRegistering);
-                setError(null);
-              }}
-              className="text-sm text-neutral-400 hover:text-cyan-400 transition-colors"
-            >
-              {isRegistering
-                ? 'Already have an account? Sign in'
-                : "Don't have an account? Create one"}
-            </button>
-          </div>
+
+        </div>
+        
+        <div className="mt-12 text-center text-xs text-neutral-600 font-medium">
+          <p>Grant, Grace, and Isaiah Russell are the owners of this club</p>
         </div>
       </div>
     </div>

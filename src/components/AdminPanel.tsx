@@ -184,7 +184,7 @@ export default function AdminPanel({ onBack, userRole, onRoleUpdate }: AdminPane
         </button>
       </header>
 
-      <div className="p-6 md:p-8 max-w-5xl mx-auto w-full grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 pb-[88px] md:pb-8">
+      <div className="p-6 md:p-8 max-w-5xl mx-auto w-full grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 md:pb-8">
         
         {/* Left Column: Settings & Users */}
         <div className="space-y-8 col-span-1">
